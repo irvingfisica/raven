@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::process;
 
-use raven::lectura;
+use raven::Frame;
 
 fn main() {
     if let Err(err) = run() {
@@ -11,7 +11,7 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let datos = lectura::leer_datos()?;
+    let datos = Frame::from_arg(1)?;
 
     println!("{:#?}",datos);
 
