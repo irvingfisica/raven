@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::process;
 
-use raven::adquisicion;
+use raven::lectura;
 
 fn main() {
     if let Err(err) = run() {
@@ -11,9 +11,9 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let datos = adquisicion::leer_datos()?;
+    let datos = lectura::leer_datos()?;
 
-    println!("{:?}",datos);
+    println!("{:#?}",datos);
 
     Ok(())
 }
