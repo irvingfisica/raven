@@ -13,7 +13,8 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error>> {
     let datos = Frame::from_arg(1)?;
 
-    println!("{:#?}",datos);
+    println!("{:#?}",datos.registros[0]);
+    println!("{:#?}",datos.columns());
 
     Ok(())
 }

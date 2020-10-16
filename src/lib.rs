@@ -11,7 +11,7 @@ pub enum Dato {
 
 #[derive(Debug)]
 pub struct Registro {
-    datos: HashMap<String, Dato>,
+    pub datos: HashMap<String, Dato>,
 }
 
 impl Registro {
@@ -38,15 +38,20 @@ impl Registro {
         crate::Registro{datos}
 
     }
+
+    pub fn columns(&self) -> Vec<String> {
+        self.datos.keys().map(|key| {key.clone()}).collect()
+    }
 }
 
 #[derive(Debug)]
 pub struct Frame {
-    registros: Vec<Registro>,
+    pub registros: Vec<Registro>,
 }
 
 impl Frame {
     pub fn from_vec(registros: Vec<crate::Registro>) -> Frame {
+
         crate::Frame{registros}
     }
 
@@ -56,6 +61,9 @@ impl Frame {
             .flexible(true)
             .trim(csv::Trim::All)
             .from_path(file_path)?;
+
+        // let headers = rdr.headers();
+        // println!("{:?}", headers);
 
         let mut registros: Vec<crate::Registro> = Vec::new();
 
@@ -79,6 +87,10 @@ impl Frame {
 
         Ok(datos)
 
+    }
+
+    pub fn columns(&self) -> Vec<String> {
+        self.registros[0].columns()
     }
 }
 
