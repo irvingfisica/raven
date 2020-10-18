@@ -99,6 +99,7 @@ pub mod lectura {
     use std::env;
     use std::error::Error;
     use std::ffi::OsString;
+    use std::collections::HashMap;
 
     pub fn leer_argumento(n: usize) -> Result<OsString, Box<dyn Error>> {
         match env::args_os().nth(n) {
@@ -106,5 +107,74 @@ pub mod lectura {
             None => Err(From::from("No se pudo leer el argumento"))
         }
     }
+
+    pub fn get_data_src(file_path: OsString) -> Result<Vec<csv::StringRecord>, Box<dyn Error>> {
+
+        let mut vector: Vec<csv::StringRecord> = Vec::new();
+
+        let mut rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        for result in rdr.records() {
+            let record = result?;
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
+
+    pub fn get_data_vec(file_path: OsString) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
+
+        let mut vector: Vec<Vec<String>> = Vec::new();
+
+        let mut rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        for result in rdr.deserialize() {
+            let record: Vec<String> = result?;
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
+
+    pub fn get_data_hsm(file_path: OsString) -> Result<Vec<HashMap<String, String>>, Box<dyn Error>> {
+
+        let mut vector: Vec<HashMap<String, String>> = Vec::new();
+
+        let mut rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        for result in rdr.deserialize() {
+            let record: HashMap<String, String> = result?;
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
+
+    pub fn get_data_brc(file_path: OsString) -> Result<Vec<csv::ByteRecord>, Box<dyn Error>> {
+
+        let mut vector: Vec<csv::ByteRecord> = Vec::new();
+
+        let mut rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        for result in rdr.byte_records() {
+            let record = result?;
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
+
 
 }
