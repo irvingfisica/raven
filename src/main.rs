@@ -1,8 +1,7 @@
 use std::error::Error;
 use std::process;
 
-// use raven::Frame;
-use raven::lectura;
+use raven::RawFrame;
 
 fn main() {
     if let Err(err) = run() {
@@ -12,22 +11,11 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    // let datos = Frame::from_arg(1)?;
+    let datos = RawFrame::from_arg(1)?;
 
-    // println!("{:#?}",datos.registros[0]);
-    // println!("{:#?}",datos.columns());
-
-    let archivo = lectura::leer_argumento(1)?;
-
-    // let datos = lectura::get_data_src(archivo)?;
-    // let datos = lectura::get_data_vec(archivo)?;
-    // let datos = lectura::get_data_hsm(archivo)?;
-    // let datos = lectura::get_data_brc(archivo)?;
-    // let datos = lectura::get_data_src_h(archivo)?;
-    let datos = lectura::get_data_brc_h(archivo)?;
-
-    println!("{:?}",datos[0]);
-    println!("{:?}",datos[1]);
+    println!("{:#?}",datos.columns);
+    println!("{:#?}",datos.records[0]);
+    println!("{:#?}",datos.records[1]);
 
     Ok(())
 }
