@@ -176,5 +176,60 @@ pub mod lectura {
         Ok(vector)
     }
 
+    pub fn get_data_src_h(file_path: OsString) -> Result<Vec<csv::StringRecord>, Box<dyn Error>> {
+
+        let mut vector: Vec<csv::StringRecord> = Vec::new();
+
+        let rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        let mut iter = rdr.into_records();
+
+        loop {
+            let row = match iter.next() {
+                Some(rec) => rec,
+                None => break,
+            };
+
+            let record = match row {
+                Ok(rec) => rec,
+                Err(_) => continue,
+            };
+
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
+
+    pub fn get_data_brc_h(file_path: OsString) -> Result<Vec<csv::StringRecord>, Box<dyn Error>> {
+
+        let mut vector: Vec<csv::StringRecord> = Vec::new();
+
+        let rdr = csv::ReaderBuilder::new()
+            .flexible(true)
+            .trim(csv::Trim::All)
+            .from_path(file_path)?;
+
+        let mut iter = rdr.into_byte_records();
+
+        loop {
+            let row = match iter.next() {
+                Some(rec) => rec,
+                None => break,
+            };
+
+            let record = match row {
+                Ok(rec) => csv::StringRecord::from_byte_record_lossy(rec),
+                Err(_) => continue,
+            };
+
+            vector.push(record);
+        }
+
+        Ok(vector)
+    }
 
 }
