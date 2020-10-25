@@ -12,7 +12,7 @@ impl RawFrame {
 
         let (columns,records) = crate::reading::get_data_src_h(file_path)?;
 
-        Ok(crate::RawFrame{records, columns})
+        Ok(crate::RawFrame{columns, records})
 
     }
 
@@ -24,8 +24,47 @@ impl RawFrame {
         Ok(datos)
 
     }
-}
 
+    pub fn col_index(&self, column: &str) -> Option<usize> {
+        let cadena = String::from(column);
+        self.columns.iter().position(|col| col == cadena)
+    }
+
+    pub fn get_column(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            record.get(position)
+        }))
+
+
+    }
+
+    pub fn get_column_numeric(&self, column: &str) -> Result<impl Iterator<Item=Option<f64>> + '_,Box<dyn Error>>{
+    
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            let result:Option<f64> = match record.get(position) {
+                None => None,
+                Some(cadena) => match cadena.parse() {
+                    Ok(num) => Some(num),
+                    _ => None,
+                }
+            };
+
+            result
+        }))
+    }
+
+}
 
 pub mod reading {
 

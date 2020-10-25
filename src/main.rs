@@ -17,5 +17,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("{:#?}",datos.records[0]);
     println!("{:#?}",datos.records[1]);
 
+    println!("{:?}",datos.col_index("nom_vial"));
+    println!("{:?}",datos.col_index("nom_vial"));
+
+    // let valorest: Vec<Option<&str>> = datos.get_column("per_ocu")?.collect();
+    let valoresn: Vec<Option<f64>> = datos.get_column_numeric("latitud")?.collect();
+
+    println!("{:?}",valoresn);
+
+
     Ok(())
 }
