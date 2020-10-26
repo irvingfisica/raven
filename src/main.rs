@@ -2,6 +2,7 @@ use std::error::Error;
 use std::process;
 
 use raven::RawFrame;
+use raven::Datum;
 
 fn main() {
     if let Err(err) = run() {
@@ -17,14 +18,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("{:#?}",datos.records[0]);
     println!("{:#?}",datos.records[1]);
 
-    println!("{:?}",datos.col_index("nom_vial"));
-    println!("{:?}",datos.col_index("nom_vial"));
+    println!("{:?}",datos.col_index("ageb"));
 
-    let valoresn: Vec<f64> = datos.get_column_numeric("latitud",0.0)?.collect();
+    let valoresn: Vec<Datum> = datos.column("ageb")?.collect();
 
     println!("{:?}",valoresn);
 
-    println!("{:?}",datos.get_column_numeric("latitud",0.0)?.nth(1));
+    println!("{:?}",datos.column("latitud")?.last());
+    println!("{:?}",datos.column("longitud")?.last());
 
 
     Ok(())

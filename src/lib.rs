@@ -2,6 +2,13 @@ use std::error::Error;
 use std::ffi::OsString;
 
 #[derive(Debug)]
+pub enum Datum<'a> {
+    Number(f64),
+    NotNumber(&'a str),
+    None
+}
+
+#[derive(Debug)]
 pub struct RawFrame {
     pub records: Vec<csv::StringRecord>,
     pub columns: csv::StringRecord,
@@ -30,7 +37,7 @@ impl RawFrame {
         self.columns.iter().position(|col| col == cadena)
     }
 
-    pub fn get_column(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
+    pub fn column_simple(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
 
         let position = match self.col_index(column) {
             Some(n) => n,
@@ -44,7 +51,7 @@ impl RawFrame {
 
     }
 
-    pub fn get_column_numeric(&self, column: &str, none_value: f64) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
+    pub fn column(&self, column: &str) -> Result<impl Iterator<Item=Datum> + '_,Box<dyn Error>>{
     
         let position = match self.col_index(column) {
             Some(n) => n,
@@ -52,11 +59,11 @@ impl RawFrame {
         };
 
         Ok(self.records.iter().map(move |record| {
-            let result:f64 = match record.get(position) {
-                None => none_value,
+            let result:Datum = match record.get(position) {
+                None => Datum::None,
                 Some(cadena) => match cadena.parse() {
-                    Ok(num) => num,
-                    _ => none_value,
+                    Ok(num) => Datum::Number(num),
+                    _ => Datum::NotNumber(cadena),
                 }
             };
 
