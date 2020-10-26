@@ -142,6 +142,7 @@ impl RawFrame {
 
     }
 
+
     pub fn col_float_fil(&self, column: &str) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
         
         let position = match self.col_index(column) {
@@ -174,6 +175,44 @@ impl RawFrame {
                         _ => Datum::NotNumber(cadena)
                     },
                 }
+            }
+        }))
+    }
+
+    pub fn column_type<T>(&self, column: &str) -> Result<impl Iterator<Item=Option<T>> + '_,Box<dyn Error>>
+    where T: std::str::FromStr
+    {
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            }
+        }))
+
+    }
+
+    pub fn col_fil<T>(&self, column: &str) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
+    where T: std::str::FromStr
+    {
+        
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().filter_map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => cadena.parse::<T>().ok()
             }
         }))
     }
