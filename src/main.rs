@@ -20,10 +20,11 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("{:?}",datos.col_index("nom_vial"));
     println!("{:?}",datos.col_index("nom_vial"));
 
-    // let valorest: Vec<Option<&str>> = datos.get_column("per_ocu")?.collect();
-    let valoresn: Vec<Option<f64>> = datos.get_column_numeric("latitud")?.collect();
+    let valoresn: Vec<f64> = datos.get_column_numeric("latitud",0.0)?.collect();
 
     println!("{:?}",valoresn);
+
+    println!("{:?}",datos.get_column_numeric("latitud",0.0)?.nth(1));
 
 
     Ok(())

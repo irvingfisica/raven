@@ -44,7 +44,7 @@ impl RawFrame {
 
     }
 
-    pub fn get_column_numeric(&self, column: &str) -> Result<impl Iterator<Item=Option<f64>> + '_,Box<dyn Error>>{
+    pub fn get_column_numeric(&self, column: &str, none_value: f64) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
     
         let position = match self.col_index(column) {
             Some(n) => n,
@@ -52,11 +52,11 @@ impl RawFrame {
         };
 
         Ok(self.records.iter().map(move |record| {
-            let result:Option<f64> = match record.get(position) {
-                None => None,
+            let result:f64 = match record.get(position) {
+                None => none_value,
                 Some(cadena) => match cadena.parse() {
-                    Ok(num) => Some(num),
-                    _ => None,
+                    Ok(num) => num,
+                    _ => none_value,
                 }
             };
 
