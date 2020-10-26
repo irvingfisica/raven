@@ -217,6 +217,27 @@ impl RawFrame {
         }))
     }
 
+    pub fn col_imp<T>(&self, column: &str, none_val:T) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
+    where T: std::str::FromStr + Copy +'static
+    {
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => none_val,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => num,
+                    _ => none_val
+                }
+            }
+        })) 
+
+    }
+
 }
 
 pub mod reading {

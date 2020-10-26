@@ -27,7 +27,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // println!("{:?}",datos.column("latitud")?.last());
     // println!("{:?}",datos.column("longitud")?.last());
 
-    let valoresn: Vec<Option<i32>> = datos.column_type("Pizzas")?.collect();
+    let valoresn: Vec<i32> = datos.col_imp("Pizzas",0)?.collect();
     println!("{:?}",valoresn);
 
     Ok(())
