@@ -18,15 +18,17 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("{:#?}",datos.records[0]);
     println!("{:#?}",datos.records[1]);
 
-    println!("{:?}",datos.col_index("ageb"));
+    // println!("{:?}",datos.col_index("ageb"));
 
-    let valoresn: Vec<Datum> = datos.column("ageb")?.collect();
+    // let valoresn: Vec<Datum> = datos.column("ageb")?.collect();
 
+    // println!("{:?}",valoresn);
+
+    // println!("{:?}",datos.column("latitud")?.last());
+    // println!("{:?}",datos.column("longitud")?.last());
+
+    let valoresn: Vec<f64> = datos.col_float_fil("Pizzas")?.collect();
     println!("{:?}",valoresn);
-
-    println!("{:?}",datos.column("latitud")?.last());
-    println!("{:?}",datos.column("longitud")?.last());
-
 
     Ok(())
 }

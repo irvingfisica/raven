@@ -3,7 +3,8 @@ use std::ffi::OsString;
 
 #[derive(Debug)]
 pub enum Datum<'a> {
-    Number(f64),
+    Integer(i32),
+    Float(f64),
     NotNumber(&'a str),
     None
 }
@@ -37,7 +38,7 @@ impl RawFrame {
         self.columns.iter().position(|col| col == cadena)
     }
 
-    pub fn column_simple(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
+    pub fn column_str(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
 
         let position = match self.col_index(column) {
             Some(n) => n,
@@ -48,7 +49,112 @@ impl RawFrame {
             record.get(position)
         }))
 
+    }
 
+    pub fn column_int(&self, column: &str) -> Result<impl Iterator<Item=Option<i32>> + '_,Box<dyn Error>>{
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => match cadena.parse::<i32>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            }
+        }))
+
+    }
+
+    pub fn col_int_imp(&self, column: &str, none_val: i32) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => none_val,
+                Some(cadena) => match cadena.parse::<i32>() {
+                    Ok(num) => num,
+                    _ => none_val
+                }
+            }
+        })) 
+
+    }
+
+    pub fn col_int_fil(&self, column: &str) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
+        
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().filter_map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => cadena.parse::<i32>().ok()
+            }
+        }))
+    }
+
+    pub fn column_float(&self, column: &str) -> Result<impl Iterator<Item=Option<f64>> + '_,Box<dyn Error>>{
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => match cadena.parse::<f64>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            }
+        }))
+
+    }
+
+    pub fn col_float_imp(&self, column: &str, none_val: f64) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => none_val,
+                Some(cadena) => match cadena.parse::<f64>() {
+                    Ok(num) => num,
+                    _ => none_val
+                }
+            }
+        })) 
+
+    }
+
+    pub fn col_float_fil(&self, column: &str) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
+        
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().filter_map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => cadena.parse::<f64>().ok()
+            }
+        }))
     }
 
     pub fn column(&self, column: &str) -> Result<impl Iterator<Item=Datum> + '_,Box<dyn Error>>{
@@ -59,15 +165,16 @@ impl RawFrame {
         };
 
         Ok(self.records.iter().map(move |record| {
-            let result:Datum = match record.get(position) {
+            match record.get(position) {
                 None => Datum::None,
-                Some(cadena) => match cadena.parse() {
-                    Ok(num) => Datum::Number(num),
-                    _ => Datum::NotNumber(cadena),
+                Some(cadena) => match cadena.parse::<i32>() {
+                    Ok(num) => Datum::Integer(num),
+                    _ => match cadena.parse::<f64>() {
+                        Ok(num) => Datum::Float(num),
+                        _ => Datum::NotNumber(cadena)
+                    },
                 }
-            };
-
-            result
+            }
         }))
     }
 
