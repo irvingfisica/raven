@@ -6,7 +6,7 @@ use std::error::Error;
 use std::ffi::OsString;
 
 /// Enum to contain a datum, it can be an Integer, a Float, an String or None.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Datum<'a> {
     Integer(i32),
     Float(f64),
@@ -233,7 +233,7 @@ impl RawFrame {
     /// The generic type is specified in the definition of the variable in which the iterator will bind.
     /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
     /// In the future the specific type columns will dissapear.
-    pub fn column_type<T>(&self, column: &str) -> Result<impl Iterator<Item=Option<T>> + '_,Box<dyn Error>>
+    pub fn col_type<T>(&self, column: &str) -> Result<impl Iterator<Item=Option<T>> + '_,Box<dyn Error>>
     where T: std::str::FromStr
     {
 

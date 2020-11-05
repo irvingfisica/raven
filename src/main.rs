@@ -2,7 +2,6 @@ use std::error::Error;
 use std::process;
 
 use raven::RawFrame;
-use raven::Datum;
 
 fn main() {
     if let Err(err) = run() {
@@ -14,21 +13,24 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error>> {
     let datos = RawFrame::from_arg(1)?;
 
-    println!("{:#?}",datos.columns);
-    println!("{:#?}",datos.records[0]);
-    println!("{:#?}",datos.records[1]);
+    println!("{:#?}",datos.columns.get(1).unwrap());
+    // println!("{:#?}",datos.records[1]);
 
-    // println!("{:?}",datos.col_index("ageb"));
+    // println!("Columna 'col_a' está en la posición: {:?}",datos.col_index("col_b"));
 
-    // let valoresn: Vec<Datum> = datos.column("ageb")?.collect();
+    // let col_dat_test_a: Vec<Datum> = datos.column("col_a")?.collect();
+    // let col_dat_test_b: Vec<Datum> = datos.column("col_b")?.collect();
+    // println!("{:?}",col_dat_test_a);
+    // println!("{:?}",col_dat_test_b);
 
-    // println!("{:?}",valoresn);
+    // let col_typ_test: Vec<Option<i32>> = datos.col_type("col_a")?.collect();
+    // println!("{:?}",col_typ_test);
 
-    // println!("{:?}",datos.column("latitud")?.last());
-    // println!("{:?}",datos.column("longitud")?.last());
+    // let col_imp_test: Vec<i32> = datos.col_imp("col_b",0)?.collect();
+    // println!("{:?}",col_imp_test);
 
-    let valoresn: Vec<i32> = datos.col_imp("Pizzas",0)?.collect();
-    println!("{:?}",valoresn);
+    // let col_fil_test: Vec<i32> = datos.col_fil("col_a")?.collect();
+    // println!("{:?}",col_fil_test);
 
     Ok(())
 }
