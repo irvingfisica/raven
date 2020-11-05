@@ -37,6 +37,20 @@ pub struct RawFrame {
 
 impl RawFrame {
     /// Creates a RawFrame from an os_string.
+    /// 
+    /// # Arguments
+    ///
+    /// * `file_path` - An OsString that holds the path of CSV file
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use std::ffi::OsString;
+    ///
+    /// let path = OsString::from("./datos_test/test.csv");
+    /// let datos = RawFrame::from_os_string(path).unwrap();
+    /// ```
     pub fn from_os_string(file_path: OsString) -> Result<crate::RawFrame, Box<dyn Error>> {
 
         let (columns,records) = crate::reading::get_data_src_h(file_path)?;
@@ -46,6 +60,18 @@ impl RawFrame {
     }
 
     /// Creates a RawFrame from terminal argument in position n.
+    /// 
+    /// # Arguments
+    ///
+    /// * `n` - A usize that holds the position of the terminal argument on which is the path of CSV file
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// 
+    /// let datos = RawFrame::from_arg(1)?;
+    /// ```
     pub fn from_arg(n: usize) -> Result<crate::RawFrame, Box<dyn Error>> {
 
         let ruta = crate::reading::read_arg(n)?;
@@ -56,9 +82,208 @@ impl RawFrame {
     }
 
     /// Returns the position index for column in RawFrame or None if column does not exists.
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// assert_eq!(datos.col_index("col_b"),Some(1));
+    /// ```
     pub fn col_index(&self, column: &str) -> Option<usize> {
         let cadena = String::from(column);
         self.columns.iter().position(|col| col == cadena)
+    }
+
+    /// Returns a full column of Datum. 
+    /// The column is in a consumible iterator. Each element has Datum type. All the valid rows are included.
+    /// The Datum type mixes several posibilities of types, this generates a general column.
+    /// For simple operations or plotting use specific type columns.
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let col: Vec<Datum> = datos.column("col_a").unwrap().collect();
+    /// ```
+    pub fn column(&self, column: &str) -> Result<impl Iterator<Item=Datum> + '_,Box<dyn Error>>{
+    
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => Datum::None,
+                Some(cadena) => match cadena.parse::<i32>() {
+                    Ok(num) => Datum::Integer(num),
+                    _ => match cadena.parse::<f64>() {
+                        Ok(num) => Datum::Float(num),
+                        _ => Datum::NotNumber(cadena)
+                    },
+                }
+            }
+        }))
+    }
+
+    /// Returns a full column of a generic type. 
+    /// The column is in a consumible iterator. Each element has Option<T> type. All the valid rows are included.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
+    /// In the future the specific type columns will dissapear.
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let col: Vec<Option<i32>> = datos.col_type("col_a").unwrap().collect();
+    /// ```
+    pub fn col_type<T>(&self, column: &str) -> Result<impl Iterator<Item=Option<T>> + '_,Box<dyn Error>>
+    where T: std::str::FromStr
+    {
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            }
+        }))
+
+    }
+
+    /// Returns a filtered column of generic type filtering for only the possible to parse data. 
+    /// The column is in a consumible iterator. Each element has T type. Only the valid parsed rows are included.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
+    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
+    /// In the future the specific type columns will dissapear.
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let col: Vec<i32> = datos.col_fil("col_a").unwrap().collect();
+    /// ```
+    pub fn col_fil<T>(&self, column: &str) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
+    where T: std::str::FromStr
+    {
+        
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().filter_map(move |record| {
+            match record.get(position) {
+                None => None,
+                Some(cadena) => cadena.parse::<T>().ok()
+            }
+        }))
+    }
+
+    /// Returns a full column of a generic type imputing none_val in the impossible to parse data. 
+    /// The column is in a consumible iterator. Each element has T type. All the valid rows are included.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
+    /// In the future the specific type columns will dissapear.
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let col: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
+    /// ```
+    pub fn col_imp<T>(&self, column: &str, none_val:T) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
+    where T: std::str::FromStr + Copy + 'static
+    {
+
+        let position = match self.col_index(column) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            match record.get(position) {
+                None => none_val,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => num,
+                    _ => none_val
+                }
+            }
+        })) 
+
     }
 
     /// Returns a full column of strs. 
@@ -201,106 +426,6 @@ impl RawFrame {
                 Some(cadena) => cadena.parse::<f64>().ok()
             }
         }))
-    }
-
-    /// Returns a full column of Datum. 
-    /// The column is in a consumible iterator. Each element has Datum type. All the valid rows are included.
-    /// The Datum type mixes several posibilities of types, this generates a general column.
-    /// For operations or plotting use specific type columns.
-    pub fn column(&self, column: &str) -> Result<impl Iterator<Item=Datum> + '_,Box<dyn Error>>{
-    
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => Datum::None,
-                Some(cadena) => match cadena.parse::<i32>() {
-                    Ok(num) => Datum::Integer(num),
-                    _ => match cadena.parse::<f64>() {
-                        Ok(num) => Datum::Float(num),
-                        _ => Datum::NotNumber(cadena)
-                    },
-                }
-            }
-        }))
-    }
-
-    /// Returns a full column of a generic type. 
-    /// The column is in a consumible iterator. Each element has Option<T> type. All the valid rows are included.
-    /// The generic type is specified in the definition of the variable in which the iterator will bind.
-    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
-    /// In the future the specific type columns will dissapear.
-    pub fn col_type<T>(&self, column: &str) -> Result<impl Iterator<Item=Option<T>> + '_,Box<dyn Error>>
-    where T: std::str::FromStr
-    {
-
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => match cadena.parse::<T>() {
-                    Ok(num) => Some(num),
-                    _ => None
-                } 
-            }
-        }))
-
-    }
-
-    /// Returns a filtered column of generic type filtering for only the possible to parse data. 
-    /// The column is in a consumible iterator. Each element has T type. Only the valid parsed rows are included.
-    /// The generic type is specified in the definition of the variable in which the iterator will bind.
-    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
-    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
-    /// In the future the specific type columns will dissapear.
-    pub fn col_fil<T>(&self, column: &str) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
-    where T: std::str::FromStr
-    {
-        
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
-
-        Ok(self.records.iter().filter_map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => cadena.parse::<T>().ok()
-            }
-        }))
-    }
-
-    /// Returns a full column of a generic type imputing none_val in the impossible to parse data. 
-    /// The column is in a consumible iterator. Each element has T type. All the valid rows are included.
-    /// The generic type is specified in the definition of the variable in which the iterator will bind.
-    /// This method feels repetitive with methods that returns specific type columns because was created after the definition of those.
-    /// In the future the specific type columns will dissapear.
-    pub fn col_imp<T>(&self, column: &str, none_val:T) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
-    where T: std::str::FromStr + Copy + 'static
-    {
-
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => none_val,
-                Some(cadena) => match cadena.parse::<T>() {
-                    Ok(num) => num,
-                    _ => none_val
-                }
-            }
-        })) 
-
     }
 
 }
