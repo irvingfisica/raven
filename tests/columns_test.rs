@@ -19,10 +19,10 @@ fn row_test(){
     assert_eq!(datos.records[1].get(1),Some("25a"));
 }
 
-#[test]
+#[test] 
 fn index_test(){
     let datos = get_data();
-    
+
     assert_eq!(datos.col_index("col_b"),Some(1));
 }
 

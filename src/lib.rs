@@ -64,14 +64,6 @@ impl RawFrame {
     /// # Arguments
     ///
     /// * `n` - A usize that holds the position of the terminal argument on which is the path of CSV file
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use raven::RawFrame;
-    /// 
-    /// let datos = RawFrame::from_arg(1)?;
-    /// ```
     pub fn from_arg(n: usize) -> Result<crate::RawFrame, Box<dyn Error>> {
 
         let ruta = crate::reading::read_arg(n)?;
@@ -98,6 +90,8 @@ impl RawFrame {
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
     /// } 
+    /// 
+    /// let datos = get_data();
     /// 
     /// assert_eq!(datos.col_index("col_b"),Some(1));
     /// ```
@@ -127,6 +121,8 @@ impl RawFrame {
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
     /// }
+    /// 
+    /// let datos = get_data();
     /// 
     /// let col: Vec<Datum> = datos.column("col_a").unwrap().collect();
     /// ```
@@ -173,6 +169,8 @@ impl RawFrame {
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
     /// }
+    /// 
+    /// let datos = get_data();
     /// 
     /// let col: Vec<Option<i32>> = datos.col_type("col_a").unwrap().collect();
     /// ```
@@ -221,6 +219,8 @@ impl RawFrame {
     ///     datos
     /// }
     /// 
+    /// let datos = get_data();
+    /// 
     /// let col: Vec<i32> = datos.col_fil("col_a").unwrap().collect();
     /// ```
     pub fn col_fil<T>(&self, column: &str) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
@@ -262,6 +262,8 @@ impl RawFrame {
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
     /// } 
+    /// 
+    /// let datos = get_data();
     /// 
     /// let col: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
     /// ```
