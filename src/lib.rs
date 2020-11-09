@@ -430,6 +430,41 @@ impl RawFrame {
         }))
     }
 
+    pub fn max_num_fil<T>(&self, column: &str) -> Result<T,Box<dyn Error>>
+    where T: std::str::FromStr + std::cmp::Ord
+    {
+
+        let iter = self.col_fil(column)?;
+
+        match iter.max() {
+            None => Err(From::from("No se encontró el máximo")),
+            Some(val) => Ok(val)
+        }
+
+    }
+
+    pub fn min_num_fil<T>(&self, column: &str) -> Result<T,Box<dyn Error>>
+    where T: std::str::FromStr + std::cmp::Ord
+    {
+
+        let iter = self.col_fil(column)?;
+
+        match iter.min() {
+            None => Err(From::from("No se encontró el máximo")),
+            Some(val) => Ok(val)
+        }
+
+    }
+
+    pub fn extent_num_fil<T>(&self, column: &str) -> Result<(T,T),Box<dyn Error>>
+    where T: std::str::FromStr + std::cmp::Ord
+    {
+        let maximo = self.max_num_fil(column)?;
+        let minimo = self.min_num_fil(column)?;
+
+        Ok((minimo,maximo))
+    }
+
 }
 
 pub mod reading {
