@@ -100,6 +100,13 @@ impl RawFrame {
         self.columns.iter().position(|col| col == cadena)
     }
 
+    pub fn col_position(&self, column: &str) -> Result<usize,Box<dyn Error>> {
+        match self.col_index(column) {
+            Some(n) => Ok(n),
+            None => Err(From::from("No existe la columna"))
+        }
+    }
+
     /// Returns a full column of Datum. 
     /// The column is in a consumible iterator. Each element has Datum type. All the valid rows are included.
     /// The Datum type mixes several posibilities of types, this generates a general column.
@@ -128,10 +135,7 @@ impl RawFrame {
     /// ```
     pub fn column(&self, column: &str) -> Result<impl Iterator<Item=Datum> + '_,Box<dyn Error>>{
     
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -178,10 +182,7 @@ impl RawFrame {
     where T: std::str::FromStr
     {
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -227,10 +228,7 @@ impl RawFrame {
     where T: std::str::FromStr
     {
         
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().filter_map(move |record| {
             match record.get(position) {
@@ -271,10 +269,7 @@ impl RawFrame {
     where T: std::str::FromStr + Copy + 'static
     {
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -293,10 +288,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn column_str(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             record.get(position)
@@ -309,10 +301,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn column_int(&self, column: &str) -> Result<impl Iterator<Item=Option<i32>> + '_,Box<dyn Error>>{
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -331,10 +320,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one. 
     pub fn col_int_imp(&self, column: &str, none_val: i32) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -354,10 +340,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn col_int_fil(&self, column: &str) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
         
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().filter_map(move |record| {
             match record.get(position) {
@@ -372,10 +355,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn column_float(&self, column: &str) -> Result<impl Iterator<Item=Option<f64>> + '_,Box<dyn Error>>{
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -394,10 +374,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn col_float_imp(&self, column: &str, none_val: f64) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
 
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
@@ -417,10 +394,7 @@ impl RawFrame {
     /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
     pub fn col_float_fil(&self, column: &str) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
         
-        let position = match self.col_index(column) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let position = self.col_position(column)?;
 
         Ok(self.records.iter().filter_map(move |record| {
             match record.get(position) {
@@ -450,7 +424,7 @@ impl RawFrame {
         let iter = self.col_fil(column)?;
 
         match iter.min() {
-            None => Err(From::from("No se encontró el máximo")),
+            None => Err(From::from("No se encontró el mínimo")),
             Some(val) => Ok(val)
         }
 
@@ -465,19 +439,19 @@ impl RawFrame {
         Ok((minimo,maximo))
     }
 
+    // pub fn slice_fil<T>(&self, columns: Vec<&str>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>>
+    // where T: std::str::FromStr
+    // {
+      
+    // }
+
     pub fn pair_col_fil<T>(&self, xcolumn: &str, ycolumn: &str) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
     where T: std::str::FromStr
     {
 
-        let xposition = match self.col_index(xcolumn) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let xposition = self.col_position(xcolumn)?;
 
-        let yposition = match self.col_index(ycolumn) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let yposition = self.col_position(ycolumn)?;
 
         Ok(self.records.iter().filter_map(move |record| {
             let xval = match record.get(xposition) {
@@ -508,15 +482,9 @@ impl RawFrame {
     where T: std::str::FromStr + Copy + 'static
     {
 
-        let xposition = match self.col_index(xcolumn) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let xposition = self.col_position(xcolumn)?;
 
-        let yposition = match self.col_index(ycolumn) {
-            Some(n) => n,
-            None => return Err(From::from("No existe la columna"))
-        };
+        let yposition = self.col_position(ycolumn)?;
 
         Ok(self.records.iter().map(move |record| {
             let xval = match record.get(xposition) {
