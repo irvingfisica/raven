@@ -632,6 +632,86 @@ impl RawFrame {
 
     }
 
+    /// Returns a pair of columns of generic type sorted by values on first column. Imputing in the impossible to parse data none_val_x for the first column and none_val_y for the second column. 
+    /// The result is in a consumible iterator. Each element is a tuple of T type.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
+    /// This method has a different order related to the rows in the RawDataframe, use it with caution.
+    /// This method is mainly used for compute operations between two columns and to generate a pair of coordinates to plot.
+    /// 
+    /// # Arguments
+    ///
+    /// * `xcolumn` - A string slice that holds the name of first the column
+    /// * `ycolumn` - A string slice that holds the name of second the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let pairs: Vec<(f64,f64)> = datos.pair_col_imp_sorted("col_a","col_b").unwrap().collect();
+    /// ```
+    pub fn pair_col_fil_sorted<T>(&self, xcolumn: &str, ycolumn: &str) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
+    where T: std::str::FromStr + std::cmp::PartialOrd + 'static
+    {
+
+        let mut temp_vec: Vec<(T,T)> = self.pair_col_fil(xcolumn, ycolumn).unwrap().collect();
+        temp_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        Ok(temp_vec.into_iter())
+
+    }
+
+    /// Returns a pair of columns of generic type sorted by values on first column. Filtering for rows where both values can be parsed. 
+    /// The result is in a consumible iterator. Each element is a tuple of T type.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
+    /// This method has a different order related to the rows in the RawDataframe, use it with caution.
+    /// This method is mainly used for compute operations between two columns and to generate a pair of coordinates to plot.
+    /// 
+    /// # Arguments
+    ///
+    /// * `xcolumn` - A string slice that holds the name of first the column
+    /// * `ycolumn` - A string slice that holds the name of second the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let pairs: Vec<(f64,f64)> = datos.pair_col_fil_sorted("col_a","col_b").unwrap().collect();
+    /// ```
+    pub fn pair_col_imp_sorted<T>(&self, xcolumn: &str, ycolumn: &str, none_val_x:T, none_val_y:T) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
+    where T: std::str::FromStr + std::cmp::PartialOrd + Copy + 'static
+    {
+
+        let mut temp_vec: Vec<(T,T)> = self.pair_col_imp(xcolumn, ycolumn, none_val_x, none_val_y).unwrap().collect();
+        temp_vec.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        Ok(temp_vec.into_iter())
+
+    }
+
 
 }
 
