@@ -465,6 +465,82 @@ impl RawFrame {
         Ok((minimo,maximo))
     }
 
+    pub fn pair_col_fil<T>(&self, xcolumn: &str, ycolumn: &str) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
+    where T: std::str::FromStr
+    {
+
+        let xposition = match self.col_index(xcolumn) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        let yposition = match self.col_index(ycolumn) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().filter_map(move |record| {
+            let xval = match record.get(xposition) {
+                None => None,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            };
+
+            let yval = match record.get(yposition) {
+                None => None,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => Some(num),
+                    _ => None
+                } 
+            };
+            
+            match (xval,yval) {
+                (Some(valx),Some(valy)) => Some((valx,valy)),
+                _ => None,
+            }
+        }))
+
+    }
+
+    pub fn pair_col_imp<T>(&self, xcolumn: &str, ycolumn: &str, none_val_x:T, none_val_y:T) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
+    where T: std::str::FromStr + Copy + 'static
+    {
+
+        let xposition = match self.col_index(xcolumn) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        let yposition = match self.col_index(ycolumn) {
+            Some(n) => n,
+            None => return Err(From::from("No existe la columna"))
+        };
+
+        Ok(self.records.iter().map(move |record| {
+            let xval = match record.get(xposition) {
+                None => none_val_x,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => num,
+                    _ => none_val_x
+                } 
+            };
+
+            let yval = match record.get(yposition) {
+                None => none_val_y,
+                Some(cadena) => match cadena.parse::<T>() {
+                    Ok(num) => num,
+                    _ => none_val_y
+                } 
+            };
+            
+            (xval,yval)
+        }))
+
+    }
+
+
 }
 
 pub mod reading {
