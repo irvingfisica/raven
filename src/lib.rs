@@ -100,7 +100,8 @@ impl RawFrame {
         self.columns.iter().position(|col| col == cadena)
     }
 
-    pub fn col_position(&self, column: &str) -> Result<usize,Box<dyn Error>> {
+    /// Returns the position index for column in RawFrame or Error if column does not exists.
+    fn col_position(&self, column: &str) -> Result<usize,Box<dyn Error>> {
         match self.col_index(column) {
             Some(n) => Ok(n),
             None => Err(From::from("No existe la columna"))
@@ -247,6 +248,8 @@ impl RawFrame {
     /// # Arguments
     ///
     /// * `column` - A string slice that holds the name of the column
+    /// 
+    /// * `none_val` - value for imputing the impossible to parse values
     ///
     /// # Examples
     ///
@@ -404,6 +407,29 @@ impl RawFrame {
         }))
     }
 
+    /// Returns the maximum value of a column. The type is generic for comparable types, in order to compare floats is necessary to define std::cmp::Ord or use ordered-float crate or similar
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let maximo: i32 = datos.max_num_fil("col_a").unwrap();
+    /// ```
     pub fn max_num_fil<T>(&self, column: &str) -> Result<T,Box<dyn Error>>
     where T: std::str::FromStr + std::cmp::Ord
     {
@@ -417,6 +443,29 @@ impl RawFrame {
 
     }
 
+    /// Returns the minimum value of a column. The type is generic for comparable types, in order to compare floats is necessary to define std::cmp::Ord or use ordered-float crate or similar
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let minimo: i32 = datos.min_num_fil("col_a").unwrap();
+    /// ```
     pub fn min_num_fil<T>(&self, column: &str) -> Result<T,Box<dyn Error>>
     where T: std::str::FromStr + std::cmp::Ord
     {
@@ -430,6 +479,29 @@ impl RawFrame {
 
     }
 
+    /// Returns the extent of range of a column. A tuple with minimum and maximum. The type is generic for comparable types, in order to compare floats is necessary to define std::cmp::Ord or use ordered-float crate or similar
+    /// 
+    /// # Arguments
+    ///
+    /// * `column` - A string slice that holds the name of the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let extent: (i32,i32) = datos.extent_num_fil("col_a").unwrap();
+    /// ```
     pub fn extent_num_fil<T>(&self, column: &str) -> Result<(T,T),Box<dyn Error>>
     where T: std::str::FromStr + std::cmp::Ord
     {
@@ -439,12 +511,34 @@ impl RawFrame {
         Ok((minimo,maximo))
     }
 
-    // pub fn slice_fil<T>(&self, columns: Vec<&str>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>>
-    // where T: std::str::FromStr
-    // {
-      
-    // }
-
+    /// Returns a pair of columns of generic type filtering for rows where both values can be parsed. 
+    /// The result is in a consumible iterator. Each element is a tuple of T type.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
+    /// This method is mainly used for compute operations between two columns and to generate a pair of coordinates to plot.
+    /// 
+    /// # Arguments
+    ///
+    /// * `xcolumn` - A string slice that holds the name of first the column
+    /// * `ycolumn` - A string slice that holds the name of second the column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let pairs: Vec<(f64,f64)> = datos.pair_col_fil("col_a","col_b").unwrap().collect();
+    /// ```
     pub fn pair_col_fil<T>(&self, xcolumn: &str, ycolumn: &str) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
     where T: std::str::FromStr
     {
@@ -478,6 +572,36 @@ impl RawFrame {
 
     }
 
+    /// Returns a pair of columns of generic type imputing in the impossible to parse data none_val_x for the first column and none_val_y for the second column. 
+    /// The result is in a consumible iterator. Each element is a tuple of T type. All the valid rows are included.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method is mainly used for compute operations between two columns and to generate a pair of coordinates to plot.
+    /// 
+    /// # Arguments
+    ///
+    /// * `xcolumn` - A string slice that holds the name of first the column
+    /// * `ycolumn` - A string slice that holds the name of second the column
+    /// 
+    /// * `none_val_x` - value for imputing the impossible to parse values for the first column
+    /// * `none_val_y` - value for imputing the impossible to parse values for the second column
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let col: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
+    /// ```
     pub fn pair_col_imp<T>(&self, xcolumn: &str, ycolumn: &str, none_val_x:T, none_val_y:T) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
     where T: std::str::FromStr + Copy + 'static
     {
@@ -519,6 +643,7 @@ pub mod reading {
     use std::ffi::OsString;
     use std::collections::HashMap;
 
+    /// Returns an OsString for terminal argument in position n or an error if it is not possible to read it
     pub fn read_arg(n: usize) -> Result<OsString, Box<dyn Error>> {
         match env::args_os().nth(n) {
             Some(file_path) => Ok(file_path),
@@ -526,6 +651,7 @@ pub mod reading {
         }
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row is represented as a csv::StringRecord
     pub fn get_data_src(file_path: OsString) -> Result<(csv::StringRecord,Vec<csv::StringRecord>), Box<dyn Error>> {
 
         let mut vector: Vec<csv::StringRecord> = Vec::new();
@@ -545,6 +671,7 @@ pub mod reading {
         Ok((columns,vector))
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row is represented as a Vec<String>
     pub fn get_data_vec(file_path: OsString) -> Result<(csv::StringRecord,Vec<Vec<String>>), Box<dyn Error>> {
 
         let mut vector: Vec<Vec<String>> = Vec::new();
@@ -564,6 +691,7 @@ pub mod reading {
         Ok((columns,vector))
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row are represented as a HashMap
     pub fn get_data_hsm(file_path: OsString) -> Result<(csv::StringRecord,Vec<HashMap<String, String>>), Box<dyn Error>> {
 
         let mut vector: Vec<HashMap<String, String>> = Vec::new();
@@ -583,6 +711,7 @@ pub mod reading {
         Ok((columns,vector))
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row are represented as a csv::ByteRecord
     pub fn get_data_brc(file_path: OsString) -> Result<(csv::StringRecord,Vec<csv::ByteRecord>), Box<dyn Error>> {
 
         let mut vector: Vec<csv::ByteRecord> = Vec::new();
@@ -602,6 +731,7 @@ pub mod reading {
         Ok((columns,vector))
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row are represented as a csv::StringRecord
     pub fn get_data_src_h(file_path: OsString) -> Result<(csv::StringRecord,Vec<csv::StringRecord>), Box<dyn Error>> {
 
         let mut vector: Vec<csv::StringRecord> = Vec::new();
@@ -633,6 +763,7 @@ pub mod reading {
         Ok((columns,vector))
     }
 
+    /// Returns a tuple with column names and a Vec of rows in a csv file. Each row are represented as a csv::StringRecord
     pub fn get_data_brc_h(file_path: OsString) -> Result<(csv::StringRecord,Vec<csv::StringRecord>), Box<dyn Error>> {
 
         let mut vector: Vec<csv::StringRecord> = Vec::new();
