@@ -15,6 +15,8 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error>> {
     let datos = RawFrame::from_arg(1)?;
 
+    println!("cargado");
+
     let col_x = "longitud";
     let col_y = "latitud";
 
@@ -24,8 +26,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     let x_range = extent_x.0.into_inner()..extent_x.1.into_inner();
     let y_range = extent_y.0.into_inner()..extent_y.1.into_inner();
 
+    println!("plot");
 
-    let drawing_area = BitMapBackend::new("./imagenes/test_2.png", (1024, 768)).into_drawing_area();
+    let drawing_area = BitMapBackend::new("./imagenes/test_3.png", (1024, 768)).into_drawing_area();
 
     drawing_area.fill(&WHITE).unwrap();
 

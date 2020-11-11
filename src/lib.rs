@@ -824,6 +824,32 @@ pub mod utils {
 
 }
 
+pub mod writing {
+    //! Auxiliar module for writing CSV files.
+
+    use std::ffi::OsString;
+    use std::error::Error;
+
+    /// Write a csv file from an iter. It is necessary that the elements of the iter are vecs of a defined type. In order to write an iter obtained from column producer methods of RawFrame it must be casted to a type first
+    pub fn to_csv_iter<T>(path: OsString, columns: Vec<&str>, iterador: impl Iterator<Item=Vec<T>>) -> Result<(), Box<dyn Error>>
+    where T: std::convert::AsRef<[u8]>
+    {
+
+        let mut wtr = csv::Writer::from_path(path)?;
+
+        wtr.write_record(columns)?;
+
+        for record in iterador {
+            wtr.write_record(record)?;
+        }
+
+        wtr.flush()?;
+
+        Ok(())
+
+    }
+}
+
 pub mod reading {
     //! Auxiliar module for reading CSV files.
 
