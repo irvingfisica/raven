@@ -658,7 +658,7 @@ impl RawFrame {
     /// 
     /// let datos = get_data();
     /// 
-    /// let col: Vec<i32> = datos.slice_col_imp(vec!["col_a","col_b"],vec![0,0]).unwrap().collect();
+    /// let col: Vec<Vec<i32>> = datos.slice_col_imp(vec!["col_a","col_b"],vec![0,0]).unwrap().collect();
     /// ```
     pub fn slice_col_imp<T>(&self, columns: Vec<&str>, imp_vals: Vec<T>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>> 
     where T: std::str::FromStr + Clone + 'static
@@ -703,7 +703,7 @@ impl RawFrame {
     /// 
     /// let datos = get_data();
     /// 
-    /// let pairs: Vec<(f64,f64)> = datos.slice_col_fil(vec!["col_a","col_b"]).unwrap().collect();
+    /// let pairs: Vec<Vec<f64>> = datos.slice_col_fil(vec!["col_a","col_b"]).unwrap().collect();
     /// ```
     pub fn slice_col_fil<T>(&self, columns: Vec<&str>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>> 
     where T: std::str::FromStr + Clone
@@ -757,7 +757,7 @@ impl RawFrame {
     /// 
     /// let datos = get_data();
     /// 
-    /// let pairs: Vec<(f64,f64)> = datos.pair_col_imp_sorted("col_a","col_b").unwrap().collect();
+    /// let pairs: Vec<(f64,f64)> = datos.pair_col_fil_sorted("col_a","col_b").unwrap().collect();
     /// ```
     pub fn pair_col_fil_sorted<T>(&self, xcolumn: &str, ycolumn: &str) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
     where T: std::str::FromStr + std::cmp::PartialOrd + 'static
@@ -797,7 +797,7 @@ impl RawFrame {
     /// 
     /// let datos = get_data();
     /// 
-    /// let pairs: Vec<(f64,f64)> = datos.pair_col_fil_sorted("col_a","col_b").unwrap().collect();
+    /// let pairs: Vec<(f64,f64)> = datos.pair_col_imp_sorted("col_a","col_b",0.0,0.0).unwrap().collect();
     /// ```
     pub fn pair_col_imp_sorted<T>(&self, xcolumn: &str, ycolumn: &str, none_val_x:T, none_val_y:T) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
     where T: std::str::FromStr + std::cmp::PartialOrd + Copy + 'static
