@@ -269,17 +269,17 @@ impl RawFrame {
     /// let col: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
     /// ```
     pub fn col_imp<T>(&self, column: &str, none_val:T) -> Result<impl Iterator<Item=T> + '_,Box<dyn Error>>
-    where T: std::str::FromStr + Copy + 'static
+    where T: std::str::FromStr + Clone + 'static
     {
 
         let position = self.col_position(column)?;
 
         Ok(self.records.iter().map(move |record| {
             match record.get(position) {
-                None => none_val,
+                None => none_val.clone(),
                 Some(cadena) => match cadena.parse::<T>() {
                     Ok(num) => num,
-                    _ => none_val
+                    _ => none_val.clone()
                 }
             }
         })) 
@@ -603,7 +603,7 @@ impl RawFrame {
     /// let col: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
     /// ```
     pub fn pair_col_imp<T>(&self, xcolumn: &str, ycolumn: &str, none_val_x:T, none_val_y:T) -> Result<impl Iterator<Item=(T,T)> + '_,Box<dyn Error>>
-    where T: std::str::FromStr + Copy + 'static
+    where T: std::str::FromStr + Clone + 'static
     {
 
         let xposition = self.col_position(xcolumn)?;
@@ -612,22 +612,120 @@ impl RawFrame {
 
         Ok(self.records.iter().map(move |record| {
             let xval = match record.get(xposition) {
-                None => none_val_x,
+                None => none_val_x.clone(),
                 Some(cadena) => match cadena.parse::<T>() {
                     Ok(num) => num,
-                    _ => none_val_x
+                    _ => none_val_x.clone()
                 } 
             };
 
             let yval = match record.get(yposition) {
-                None => none_val_y,
+                None => none_val_y.clone(),
                 Some(cadena) => match cadena.parse::<T>() {
                     Ok(num) => num,
-                    _ => none_val_y
+                    _ => none_val_y.clone()
                 } 
             };
             
             (xval,yval)
+        }))
+
+    }
+
+    /// Returns a slice of columns of generic type imputing in the impossible to parse data the values in the imp_vals Vec. 
+    /// The result is in a consumible iterator. Each element is a vec of T type. All the valid rows are included.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method is mainly used for compute operations between two columns and to generate a pair of coordinates to plot.
+    /// 
+    /// # Arguments
+    ///
+    /// * `columns` - A Vec of string slices that holds the names of the columns to get
+    /// 
+    /// * `imp_vals` - values for imputing the impossible to parse values, it has the same order of columns
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// } 
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let col: Vec<i32> = datos.slice_col_imp(vec!["col_a","col_b"],vec![0,0]).unwrap().collect();
+    /// ```
+    pub fn slice_col_imp<T>(&self, columns: Vec<&str>, imp_vals: Vec<T>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>> 
+    where T: std::str::FromStr + Clone + 'static
+    {
+
+        let positions = columns.iter().map(|col| self.col_position(col).unwrap()).collect::<Vec<usize>>();
+
+        Ok(self.records.iter().map(move |record| {
+            positions.iter().zip(imp_vals.iter()).map(|tup|{
+                match record.get(*tup.0) {
+                    None => tup.1.clone(),
+                    Some(cadena) => match cadena.parse::<T>() {
+                        Ok(num) => num,
+                        _ => tup.1.clone()
+                    }
+                }
+            }).collect::<Vec<T>>()
+        }))
+    }
+
+    /// Returns a slice of columns of generic type filtering for rows where all values can be parsed. 
+    /// The result is in a consumible iterator. Each element is a vec of T type.
+    /// The generic type is specified in the definition of the variable in which the iterator will bind.
+    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
+    /// 
+    /// # Arguments
+    ///
+    /// * `columns` -A Vec of string slices that holds the names of the columns to get
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use raven::RawFrame;
+    /// use raven::Datum;
+    /// use std::ffi::OsString;
+    ///
+    /// fn get_data() -> raven::RawFrame {
+    ///     let path = OsString::from("./datos_test/test.csv");
+    ///     let datos = RawFrame::from_os_string(path).unwrap();
+    ///     datos
+    /// }
+    /// 
+    /// let datos = get_data();
+    /// 
+    /// let pairs: Vec<(f64,f64)> = datos.slice_col_fil(vec!["col_a","col_b"]).unwrap().collect();
+    /// ```
+    pub fn slice_col_fil<T>(&self, columns: Vec<&str>) -> Result<impl Iterator<Item=Vec<T>> + '_,Box<dyn Error>> 
+    where T: std::str::FromStr + Clone
+    {
+
+        let positions = columns.iter().map(|col| self.col_position(col).unwrap()).collect::<Vec<usize>>();
+
+        Ok(self.records.iter().filter_map(move |record| {
+            let row = positions.iter().map(|pos|{
+                match record.get(*pos) {
+                    None => None,
+                    Some(cadena) => match cadena.parse::<T>() {
+                        Ok(num) => Some(num),
+                        _ => None
+                    }
+                }
+            }).collect::<Vec<Option<T>>>();
+
+            match row.iter().all(|ele| ele.is_some()) {
+                true => Some(row.iter().map(move |val| val.as_ref().cloned().unwrap()).collect::<Vec<T>>()),
+                false=> None
+            }
         }))
 
     }
@@ -712,6 +810,17 @@ impl RawFrame {
 
     }
 
+
+}
+
+pub mod utils {
+    //! Auxiliar module with handy methods.
+
+    pub fn bool_filter<T>(boolean_iter: impl Iterator<Item=bool>, target_iter: impl Iterator<Item=T>) -> impl Iterator<Item=T>{
+
+        boolean_iter.zip(target_iter).filter(|tup| tup.0).map(|truetup| truetup.1)
+
+    } 
 
 }
 
