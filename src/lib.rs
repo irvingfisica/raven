@@ -73,6 +73,17 @@ impl RawFrame {
 
     }
 
+    pub fn concat(&mut self, cola: crate::RawFrame) -> Result<(), Box<dyn Error>> {
+
+        if &self.columns.len() != &cola.columns.len() {
+            return Err(From::from("El número de columnas no es el mismo"))
+        }
+
+        self.records.extend(cola.records);
+
+        Ok(())
+    }
+
     /// Returns the position index for column in RawFrame or None if column does not exists.
     /// 
     /// # Arguments
@@ -284,127 +295,6 @@ impl RawFrame {
             }
         })) 
 
-    }
-
-    /// Returns a full column of strs. 
-    /// The column is in a consumible iterator. Each element has Option<str> type. All the valid rows are included.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn column_str(&self, column: &str) -> Result<impl Iterator<Item=Option<&str>> + '_,Box<dyn Error>>{
-
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().map(move |record| {
-            record.get(position)
-        }))
-
-    }
-
-    /// Returns a full column of ints. 
-    /// The column is in a consumible iterator. Each element has Option<i32> type. All the valid rows are included.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn column_int(&self, column: &str) -> Result<impl Iterator<Item=Option<i32>> + '_,Box<dyn Error>>{
-
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => match cadena.parse::<i32>() {
-                    Ok(num) => Some(num),
-                    _ => None
-                } 
-            }
-        }))
-
-    }
-
-    /// Returns a full column of ints imputing none_val in the impossible to parse data.
-    /// The column is in a consumible iterator. Each element has i32 type. All the valid rows are included.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one. 
-    pub fn col_int_imp(&self, column: &str, none_val: i32) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
-
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => none_val,
-                Some(cadena) => match cadena.parse::<i32>() {
-                    Ok(num) => num,
-                    _ => none_val
-                }
-            }
-        })) 
-
-    }
-
-    /// Returns a filtered column of ints filtering for only the possible to parse data.
-    /// The column is in a consumible iterator. Each element has i32 type. Only the valid rows are included.
-    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn col_int_fil(&self, column: &str) -> Result<impl Iterator<Item=i32> + '_,Box<dyn Error>>{
-        
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().filter_map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => cadena.parse::<i32>().ok()
-            }
-        }))
-    }
-
-    /// Returns a full column of floats. 
-    /// The column is in a consumible iterator. Each element has Option<f64> type. All the valid rows are included.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn column_float(&self, column: &str) -> Result<impl Iterator<Item=Option<f64>> + '_,Box<dyn Error>>{
-
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => match cadena.parse::<f64>() {
-                    Ok(num) => Some(num),
-                    _ => None
-                } 
-            }
-        }))
-
-    }
-
-    /// Returns a full column of floats imputing none_val in the impossible to parse data.
-    /// The column is in a consumible iterator. Each element has f64 type. All the valid rows are included.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn col_float_imp(&self, column: &str, none_val: f64) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
-
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().map(move |record| {
-            match record.get(position) {
-                None => none_val,
-                Some(cadena) => match cadena.parse::<f64>() {
-                    Ok(num) => num,
-                    _ => none_val
-                }
-            }
-        })) 
-
-    }
-
-    /// Returns a filtered column of floats filtering for only the possible to parse data.
-    /// The column is in a consumible iterator. Each element has f64 type. Only the valid parsed rows are included.
-    /// This method has a variable number of elements related to the rows in the RawDataframe, use it with caution.
-    /// This method will dissapear in future versions because a generic one exists. Try to use the generic one.
-    pub fn col_float_fil(&self, column: &str) -> Result<impl Iterator<Item=f64> + '_,Box<dyn Error>>{
-        
-        let position = self.col_position(column)?;
-
-        Ok(self.records.iter().filter_map(move |record| {
-            match record.get(position) {
-                None => None,
-                Some(cadena) => cadena.parse::<f64>().ok()
-            }
-        }))
     }
 
     /// Returns the maximum value of a column. The type is generic for comparable types, in order to compare floats is necessary to define std::cmp::Ord or use ordered-float crate or similar
@@ -816,6 +706,12 @@ impl RawFrame {
 pub mod utils {
     //! Auxiliar module with handy methods.
 
+    /// Allows to filter an iter with an iter of bools.
+    /// 
+    /// # Arguments
+    ///
+    /// * `boolean_iter` - Iter of bool. The returned filter will have only wlwmwnts for which this iter has true value.
+    /// * `target_iter` - Target iter to filter
     pub fn bool_filter<T>(boolean_iter: impl Iterator<Item=bool>, target_iter: impl Iterator<Item=T>) -> impl Iterator<Item=T>{
 
         boolean_iter.zip(target_iter).filter(|tup| tup.0).map(|truetup| truetup.1)
