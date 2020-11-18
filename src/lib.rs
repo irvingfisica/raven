@@ -1,6 +1,6 @@
-//! Raven
+//! RavenCol
 //!
-//! `Raven` is a collection of utilities for processing data for data analysis. Up to now it can reads data only from CSV files.
+//! `RavenCol` is a collection of utilities for processing data for data analysis. Up to now it can reads data only from CSV files.
 //! 
 use std::error::Error;
 use std::ffi::OsString;
@@ -45,7 +45,7 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
+    /// use ravencol::RawFrame;
     /// use std::ffi::OsString;
     ///
     /// let path = OsString::from("./datos_test/test.csv");
@@ -93,10 +93,10 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
+    /// use ravencol::RawFrame;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -131,11 +131,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -176,11 +176,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -222,11 +222,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -265,11 +265,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -306,11 +306,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -342,11 +342,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -378,11 +378,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -415,11 +415,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -478,11 +478,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -536,11 +536,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -581,11 +581,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -635,11 +635,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos
@@ -675,11 +675,11 @@ impl RawFrame {
     /// # Examples
     ///
     /// ```
-    /// use raven::RawFrame;
-    /// use raven::Datum;
+    /// use ravencol::RawFrame;
+    /// use ravencol::Datum;
     /// use std::ffi::OsString;
     ///
-    /// fn get_data() -> raven::RawFrame {
+    /// fn get_data() -> ravencol::RawFrame {
     ///     let path = OsString::from("./datos_test/test.csv");
     ///     let datos = RawFrame::from_os_string(path).unwrap();
     ///     datos

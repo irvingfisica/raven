@@ -1,8 +1,12 @@
 # RavenCol
 
-Manipulación de datos en Rust.
+Manipulación de datos tabulares en Rust.
 
-La idea es tener funciones que permiten consumir datos de forma simple y hacer operaciones sobre ellos. Uno de los formatos más usados en cuanto a datos son los datos tabulares y los archivos CSV, debido a esto en esta primera etapa todas las funciones se concentrean en consumir archivos CSV y obtener estructuras de datos tabulares que permitan operar sobre ellos.
+[![CratesIo](https://img.shields.io/crates/v/ravencol.svg)](https://crates.io/crates/ravencol) [![Documentacion](https://docs.rs/ravencol/badge.svg)](https://docs.rs/ravencol/)
+
+[Documentation](https://docs.rs/ravencol/)
+
+RavenCol permite consumir datos tabulares de forma simple y hacer operaciones sobre ellos. Uno de los formatos más usados en cuanto a datos son los datos tabulares y los archivos CSV, debido a esto en esta primera etapa todas las funciones se concentrean en consumir archivos CSV y obtener estructuras de datos tabulares que permitan operar sobre ellos.
 
 La estructura formada es el RawFrame. A partir de la construcción de un RawFrame se pueden generar iteradores de sus columnas o de conjuntos de columnas sobre las cuales es posible realizar operaciones más complejas. La mayoría de los métodos asociados al RawFrame regresan iteradores lo que permite usar todas las capacidades de Rust en términos de iteradores para calcular sobre el RawFrame y sus componentes.
 
@@ -16,7 +20,7 @@ Actualmente se pueden construir RawFrames solamente desde archivos CSVs. Para co
 - RawFrame desde el argumento n de la terminal: RawFrame::from_arg(n: usize)
 
 ### Ejemplo de carga de un archivo CSV
-~~~
+~~~rust
 let path = OsString::from("./datos_test/test.csv");
 let datos = RawFrame::from_os_string(path).unwrap();
 ~~~
@@ -29,7 +33,7 @@ objetivo. Por ahora la función para concatenar solamente checa que el número d
 ### Ejemplo para cargar todos los archivos desde un directorio
 
 En el siguiente ejemplo se asume que la ruta al directorio se proporciona en el argumento posición 1 de la ejecución y que está lleno de únicamente archivos CSV con las mismas columnas
-~~~
+~~~rust
 let directorio = reading::read_arg(1)?;
 
 let mut paths = fs::read_dir(directorio)?.map(|path| path.unwrap().path().into_os_string());
@@ -65,8 +69,8 @@ Una vez decidido el tipo de datos hay 3 posibilidades principales para tratar co
 
 Se puede obtener una columna en donde cada uno de los datos está dentro de un Option, de tal manera que cuando un dato no es válido su valor es None. Para crear una columna de ese estilo se utiliza la función `col_type(column)` donde `column` es el nombre de la columna a obtener.
 
-~~~
-fn get_data() -> raven::RawFrame {
+~~~rust
+fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
     let datos = RawFrame::from_os_string(path).unwrap();
     datos
@@ -81,8 +85,8 @@ let columna: Vec<Option<i32>> = datos.col_type("col_a").unwrap().collect();
 
 Se puede obtener una columna en donde solamente se mantengan aquellos datos que es posible representar en el tipo de datos elegido, de tal manera que cuando un dato no es válido no se incluye en el iterador resultante. Para crear una columna de ese estilo se utiliza la función `col_fil(column)` donde `column` es el nombre de la columna a obtener. Al utilizar este método el iterador obtenido no tiene el mismo número de elementos que el número de filas en el RawFrame, se debe usar con cuidado.
 
-~~~
-fn get_data() -> raven::RawFrame {
+~~~rust
+fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
     let datos = RawFrame::from_os_string(path).unwrap();
     datos
@@ -97,8 +101,8 @@ let columna: Vec<i32> = datos.col_fil("col_a").unwrap().collect();
 
 Se puede obtener una columna en donde cada uno de los datos que no se pueden representar en el tipo de datos elegidos es sustituido por un valor que se proporciona como parámetro al método utilizado, de tal manera que cuando un dato no es válido el valor a imputar lo representará. Para crear una columna de ese estilo se utiliza la función `col_imp(column, none_val)` donde `column` es el nombre de la columna a obtener y `none_val` es el valor a sustituir o imputar.
 
-~~~
-fn get_data() -> raven::RawFrame {
+~~~rust
+fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
     let datos = RawFrame::from_os_string(path).unwrap();
     datos
@@ -112,7 +116,7 @@ let columna: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
 ### Crear columnas genéricas
 
 También se puede crear una columna genérica tratando de identificar si el dato en cada fila de la columna a generar es un entero, un flotante o una cadena o un valor nulo. Para esto usamos el Enum Datum que fue creado para representar un dato genérico.
-~~~
+~~~rust
 Datum {
     Integer(i32),
     Float(f64),
@@ -122,8 +126,8 @@ Datum {
 ~~~
 
 Para crear una columna genérica de este tipo usamos la funcion `column(column)` donde el argumento `column` es el nombre de la columna a obtener.
-~~~
-fn get_data() -> raven::RawFrame {
+~~~rust
+fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
     let datos = RawFrame::from_os_string(path).unwrap();
     datos
@@ -142,15 +146,15 @@ Para realizar este tipo de multicolumnas se proporcionan los métodos `slice_col
 
 Un caso especial es la creación de pares de columnas ya que se utilizan en la creación de gráficas, para esos casos se cuenta con los métodos `pair_col_fil(xcolumn, ycolumn)` y `pair_col_imp(xcolumn, ycolumn, none_val_x, none_val_y)` ambos métodos regresan iteradores con tuplas de valores. Para el caso en especial de gráficas de puntos unidos y conformación de líneas se proporcionan métodos que ordenan los elementos del iterador considerando la primera columna. Estos métodos son `pair_col_fil_sorted(xcolumn, ycolumn)` y `pair_col_imp_sorted(xcolumn, ycolumn, none_val_x, none_val_y)`. Las capacidades de ordenamiento son básicas, siempre en términos de la primera columna y siempre en orden ascendente. Si se requieren ordenamientos más complejos se pueden realizar con las capacidades de manipulación de iteradores que proporciona Rust.
 
-### Ejemplo de como graficar usando plotters
+### Ejemplo de como graficar usando [plotters](https://github.com/38/plotters)
 
-~~~
+~~~rust
 use std::error::Error;
 use std::process;
 use ordered_float::OrderedFloat;
 use plotters::prelude::*;
 
-use raven::RawFrame;
+use ravencol::RawFrame;
 
 fn main() {
     if let Err(err) = run() {
@@ -160,7 +164,9 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let datos = RawFrame::from_arg(1)?;
+
+    let path = OsString::from("./datos_test/pizzas.csv");
+    let datos = RawFrame::from_os_string(path).unwrap();
 
     let col_x = "Reservations";
     let col_y = "Pizzas";
@@ -172,7 +178,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let y_range = extent_y.0.into_inner()..extent_y.1.into_inner();
 
 
-    let drawing_area = BitMapBackend::new("./imagenes/test.png", (1024, 768)).into_drawing_area();
+    let drawing_area = BitMapBackend::new("./test.png", (1024, 768)).into_drawing_area();
 
     drawing_area.fill(&WHITE).unwrap();
 
