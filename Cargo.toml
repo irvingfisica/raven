@@ -1,13 +1,12 @@
 [package]
-name = "raven"
+name = "ravencol"
+license = "MIT"
 version = "0.1.0"
 authors = ["Irving Morales <irvingfisica@gmail.com>"]
+description = "Tabular data manipulation"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 csv = "1.1.3"
-serde = { version = "1", features = ["derive"]}
-ordered-float = "2.0.0"
-plotters = "^0.3.0"

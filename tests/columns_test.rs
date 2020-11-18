@@ -1,5 +1,5 @@
-use raven::RawFrame;
-use raven::Datum;
+use ravencol::RawFrame;
+use ravencol::Datum;
 use std::ffi::OsString;
 
 #[test]
@@ -126,7 +126,7 @@ fn fil_col_test_b(){
     assert_eq!(iter.next(), None);
 }
 
-fn get_data() -> raven::RawFrame {
+fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
     let datos = RawFrame::from_os_string(path).unwrap();
     datos

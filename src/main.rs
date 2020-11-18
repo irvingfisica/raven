@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::process;
 
-use raven::RawFrame;
+use ravencol::RawFrame;
 
 fn main() {
     if let Err(err) = run() {
