@@ -1,38 +1,39 @@
 # RavenCol
 
-Manipulación de datos tabulares en Rust.
+Tabular data manipulation in Rust.
 
 [![CratesIo](https://img.shields.io/crates/v/ravencol.svg)](https://crates.io/crates/ravencol) [![Documentacion](https://docs.rs/ravencol/badge.svg)](https://docs.rs/ravencol/)
 
 [Documentation](https://docs.rs/ravencol/)
 
-RavenCol permite consumir datos tabulares de forma simple y hacer operaciones sobre ellos. Uno de los formatos más usados en cuanto a datos son los datos tabulares y los archivos CSV, debido a esto en esta primera etapa todas las funciones se concentrean en consumir archivos CSV y obtener estructuras de datos tabulares que permitan operar sobre ellos.
+RavenCol allows consuming tabular data in a simple way and doing operations on it. One of the most used formats in terms of data is tabular data and CSV files, due to this in this first stage all functions are focused on consuming CSV files and obtaining tabular data structures that allow to operate on them.
 
-La estructura formada es el RawFrame. A partir de la construcción de un RawFrame se pueden generar iteradores de sus columnas o de conjuntos de columnas sobre las cuales es posible realizar operaciones más complejas. La mayoría de los métodos asociados al RawFrame regresan iteradores lo que permite usar todas las capacidades de Rust en términos de iteradores para calcular sobre el RawFrame y sus componentes.
+The main structure is the RawFrame. From the construction of a RawFrame, iterators of its columns or of sets of columns can be generated on which it is possible to perform more complex operations. Most of the methods associated with the RawFrame return iterators which allow to use all the capabilities of Rust in terms of iterators to calculate on the RawFrame and its components.
 
-Muchas funcionalidades que serían deseables en los RawFrames son alcanzables usando las capacidades de Rust en cuanto a iteradores.
+Many functionality that would be desirable in RawFrames are achievable using Rust's iterator capabilities.
 
-## Construcción del RawFrame
+## RawFrame construction
 
-Actualmente se pueden construir RawFrames solamente desde archivos CSVs. Para construir un RawFrame es necesaria la ruta al archivo. Existen 2 funciones para crear RawFrames:
+Currently RawFrames can only be built from CSV files. To build a RawFrame the path to the file is required. There are 2 functions to create RawFrames:
 
-- RawFrame desde un OsString: RawFrame::from_os_string(file_path: OsString)
-- RawFrame desde el argumento n de la terminal: RawFrame::from_arg(n: usize)
+- RawFrame from an OsString: `RawFrame::from_os_string(file_path: OsString)`
+- RawFrame from the nth argument when the binary is executed: `RawFrame::from_arg(n: usize)`
 
-### Ejemplo de carga de un archivo CSV
+### Example of loading a CSV file
 ~~~rust
 let path = OsString::from("./datos_test/test.csv");
 let datos = RawFrame::from_os_string(path).unwrap();
 ~~~
 
-Cada RawFrame tiene dos elementos, `columns` en donde se guarda el nombre de las columnas obtenido de la primera fila del archivo CSV y `records` en donde se guardan todos los registros como un vector de filas.
+Each RawFrame has two elements:
+- `columns` where the names of the columns obtained from the first row of the CSV file are stored
+- `records` where all records are stored as a vector of rows.
 
-Si nuestros datos se encuentran en varios archivos existe la posibilidad de concatenar RawFrames, esta operación modifica el RawFrame base y consume el RawFrame
-objetivo. Por ahora la función para concatenar solamente checa que el número de columnas sea el mismo en ambos DataFrames, por ahora es responsabilidad del usuario que las columnas de ambos RawFrames tengan sentido semantico y estén en el mismo orden. 
+If our data is in several files there is the possibility of concatenating RawFrames, this operation modifies the base RawFrame and consumes the target RawFrame. Up to now the function to concatenate only checks that the number of columns is the same in both DataFrames, It is the user's responsibility to assure that the columns of both RawFrames have semantic sense and are in the same order.
 
-### Ejemplo para cargar todos los archivos desde un directorio
+### Example to load all files from a directory
 
-En el siguiente ejemplo se asume que la ruta al directorio se proporciona en el argumento posición 1 de la ejecución y que está lleno de únicamente archivos CSV con las mismas columnas
+The following example assumes that the path to the directory is provided in the execution position 1 argument and that it is filled with only CSV files with the same kind of columns
 ~~~rust
 let directorio = reading::read_arg(1)?;
 
@@ -51,23 +52,23 @@ loop {
 }
 ~~~
 
-## Creación de columnas
+## Column creation
 
-Una vez que existe un RawFrame se pueden usar sus columnas. Los RawFrames están pensados para ser estructuras de datos que se mantienen en memoria mientras proporcionan columnas con las cuales se puede operar. Las columnas se pueden obtener a traves de funciones accesoras y generan iteradores consumibles.
+Once a RawFrame exists, its columns can be used. RawFrames are thought to be data structures that are kept in memory and that function as a source of columns with which to operate. The columns can be obtained through accessor functions and generate consumable iterators.
 
-La filosofía general de RavenCol es tener los datos en un RawFrame y a partir de ahí generar iteradores consumibles para calcular sobre los datos.
+The general philosophy of RavenCol is to have the data in a RawFrame and from there generate consumable iterators to calculate on the data.
 
-Al generar una columna de un RawFrame debemos pensar en dos cosas:
-- El tipo de datos que contendrá mi columna
-- Que hacer con los datos que no se pueden representar en ese tipo de datos
+When generating a column from a RawFrame we must think of two things:
+- The type of data that my column will contain
+- What to do with data that cannot be represented in that data type
 
-Las funciones accesoras de columnas permiten definir columnas de un tipo específico de datos, sin embargo especificar el tipo de datos a usar es responsabilidad de quien llama a la función pues las funciones están definidas en términos de tipos de datos genéricos.
+Column accessor functions allow you to define columns of a specific type of data, however specifying the type of data to use is the responsibility of whoever calls the function as the functions are defined in terms of generic data types.
 
-Una vez decidido el tipo de datos hay 3 posibilidades principales para tratar con los datos que no son representables en ese tipo de datos. Que hacer con estos datos definirá el tipo de función a usar para la columna: Se pueden filtrar las filas en las cuales no es posible obtener un dato válido o se pueden imputar con algún valor que nosotros definamos.
+Once the data type has been decided there are 3 main possibilities to deal with data that is not representable in that data type. What to do with this data will define the type of function to use for the column: Rows in which it is not possible to obtain valid data can be filtered or they can be assigned with a value that we define.
 
-### Crear columnas de Options
+### Create Option columns
 
-Se puede obtener una columna en donde cada uno de los datos está dentro de un Option, de tal manera que cuando un dato no es válido su valor es None. Para crear una columna de ese estilo se utiliza la función `col_type(column)` donde `column` es el nombre de la columna a obtener.
+You can obtain a column where each of the datum is inside an Option, in such a way that when a datum is not valid its value is None. To create a column of this style, use the `col_type (column)` function where `column` is the name of the column to be obtained.
 
 ~~~rust
 fn get_data() -> ravencol::RawFrame {
@@ -81,9 +82,9 @@ let datos = get_data();
 let columna: Vec<Option<i32>> = datos.col_type("col_a").unwrap().collect();
 ~~~
 
-### Crear columnas de datos filtrando datos no válidos
+### Create columns of data by filtering invalid data
 
-Se puede obtener una columna en donde solamente se mantengan aquellos datos que es posible representar en el tipo de datos elegido, de tal manera que cuando un dato no es válido no se incluye en el iterador resultante. Para crear una columna de ese estilo se utiliza la función `col_fil(column)` donde `column` es el nombre de la columna a obtener. Al utilizar este método el iterador obtenido no tiene el mismo número de elementos que el número de filas en el RawFrame, se debe usar con cuidado.
+A column can be obtained where only those data that can be represented in the chosen data type are kept, in such a way that when a dastum is not valid it is not included in the resulting iterator. To create a column of this style, use the function `col_fil (column)` where `column` is the name of the column to obtain. When using this method the obtained iterator does not have the same number of elements as the number of rows in the RawFrame, it must be used with care.
 
 ~~~rust
 fn get_data() -> ravencol::RawFrame {
@@ -97,9 +98,9 @@ let datos = get_data();
 let columna: Vec<i32> = datos.col_fil("col_a").unwrap().collect();
 ~~~
 
-### Crear columnas de datos imputando datos no válidos
+### Create data columns by imputing invalid data
 
-Se puede obtener una columna en donde cada uno de los datos que no se pueden representar en el tipo de datos elegidos es sustituido por un valor que se proporciona como parámetro al método utilizado, de tal manera que cuando un dato no es válido el valor a imputar lo representará. Para crear una columna de ese estilo se utiliza la función `col_imp(column, none_val)` donde `column` es el nombre de la columna a obtener y `none_val` es el valor a sustituir o imputar.
+A column can be obtained where each of the datum that cannot be represented in the chosen data type is replaced by a value that is provided as a parameter to the method used, in such a way that when a datum is not valid, the value to impute will represent it. To create a column of this style, the function `col_imp (column, none_val)` is used where `column` is the name of the column to be obtained and` none_val` is the value to be substituted or imputed.
 
 ~~~rust
 fn get_data() -> ravencol::RawFrame {
@@ -113,9 +114,9 @@ let datos = get_data();
 let columna: Vec<i32> = datos.col_imp("col_a",0).unwrap().collect();
 ~~~
 
-### Crear columnas genéricas
+### Create generic columns
 
-También se puede crear una columna genérica tratando de identificar si el dato en cada fila de la columna a generar es un entero, un flotante o una cadena o un valor nulo. Para esto usamos el Enum Datum que fue creado para representar un dato genérico.
+You can also create a generic column trying to identify if the data in each row of the column to be generated is an integer, a float, a string or a null value. For this we use the Enum Datum that was created to represent a generic data.
 ~~~rust
 Datum {
     Integer(i32),
@@ -125,7 +126,7 @@ Datum {
 }
 ~~~
 
-Para crear una columna genérica de este tipo usamos la funcion `column(column)` donde el argumento `column` es el nombre de la columna a obtener.
+To create a generic column of this type we use the function `column (column)` where the argument `column` is the name of the column to obtain.
 ~~~rust
 fn get_data() -> ravencol::RawFrame {
     let path = OsString::from("./datos_test/test.csv");
@@ -138,15 +139,15 @@ let datos = get_data();
 let columna: Vec<Datum> = datos.column("col_a").unwrap().collect();
 ~~~
 
-### Creación de conjuntos de columnas
+### Create column sets
 
-Hay ocasiones en donde se necesitan iteradores que contengan conjuntos de datos provenientes de varias columnas. Por ejemplo para graficar puntos necesitaríamos parejas de coordenadas. Dentro de RavenCol existen métodos para obtener estos conjuntos de valores. La lógica es la misma, seleccionar el tipo de datos (por ahora todos los valores deben tener el mismo tipo, si se buscan estructuras con diferentes tipos de datos es posible usar el Enum datum y luego procesarla) y definir que hacer con los valores que no es posible representar en ese tipo.
+There are times when iterators that contain data sets from multiple columns are needed. For example, to plot points we would need pairs of coordinates. Within RavenCol there are methods to obtain these sets of data. The logic is the same, select the type of data and define what to do with the values ​​that it is not possible to represent in that type. Up to now all values ​​must have the same type, if structures with different types of data are needed it is possible to use the Datum type and then process it.
 
-Para realizar este tipo de multicolumnas se proporcionan los métodos `slice_col_fil(columns)` y `slice_col_imp(columns,imp_vals)` donde columns es un vector con los nombres de las columnas y imp_vals es un vector con los valores a imputar para cada columna.
+To create this type of multicolumns, the `slice_col_fil (columns)` and `slice_col_imp (columns, imp_vals)` methods are provided where columns is a vector with the names of the columns and imp_vals is a vector with the values ​​to be imputed for each column.
 
-Un caso especial es la creación de pares de columnas ya que se utilizan en la creación de gráficas, para esos casos se cuenta con los métodos `pair_col_fil(xcolumn, ycolumn)` y `pair_col_imp(xcolumn, ycolumn, none_val_x, none_val_y)` ambos métodos regresan iteradores con tuplas de valores. Para el caso en especial de gráficas de puntos unidos y conformación de líneas se proporcionan métodos que ordenan los elementos del iterador considerando la primera columna. Estos métodos son `pair_col_fil_sorted(xcolumn, ycolumn)` y `pair_col_imp_sorted(xcolumn, ycolumn, none_val_x, none_val_y)`. Las capacidades de ordenamiento son básicas, siempre en términos de la primera columna y siempre en orden ascendente. Si se requieren ordenamientos más complejos se pueden realizar con las capacidades de manipulación de iteradores que proporciona Rust.
+A special case is the creation of pairs of columns since they are used in the creation of plots, for those cases we have the methods `pair_col_fil (xcolumn, ycolumn)` and `pair_col_imp (xcolumn, ycolumn, none_val_x, none_val_y)` both methods return iterators with tuples of values. For the special case of plots of joined points, i.e. line plotting, methods are provided that order the elements of the iterator considering the first column. These methods are `pair_col_fil_sorted (xcolumn, ycolumn)` and `pair_col_imp_sorted (xcolumn, ycolumn, none_val_x, none_val_y)`. Sorting capabilities are basic, always in terms of the first column and always in ascending order. If more complex orderings are required they can be done with the iterator manipulation capabilities provided by Rust.
 
-### Ejemplo de como graficar usando [plotters](https://github.com/38/plotters)
+### Example of how to plot using [plotters](https://github.com/38/plotters)
 
 ~~~rust
 use std::error::Error;
