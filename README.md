@@ -1,10 +1,12 @@
 # RavenCol
 
-Tabular data manipulation in Rust.
-
 [![CratesIo](https://img.shields.io/crates/v/ravencol.svg)](https://crates.io/crates/ravencol) [![Documentacion](https://docs.rs/ravencol/badge.svg)](https://docs.rs/ravencol/)
 
 [Documentation](https://docs.rs/ravencol/)
+
+*Versión en español: [Aquí](https://github.com/irvingfisica/raven/blob/master/README_esp.md)*
+
+# Tabular data manipulation in Rust.
 
 RavenCol allows consuming tabular data in a simple way and doing operations on it. One of the most used formats in terms of data is tabular data and CSV files, due to this in this first stage all functions are focused on consuming CSV files and obtaining tabular data structures that allow to operate on them.
 
