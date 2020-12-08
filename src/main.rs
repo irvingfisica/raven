@@ -11,12 +11,13 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let mut datos1 = RawFrame::from_arg(1)?;
-    let datos2 = RawFrame::from_arg(1)?;
+    let datos = RawFrame::from_arg(1)?;
 
-    datos1.concat(datos2)?;
+    let mcvec: Vec<f64> = datos.column_major_vector(vec!["col_a","col_b"],vec![0.0,0.0])?;
+    println!("{:?}",mcvec);
 
-    println!("{:?}",datos1.records);
+    let mrvec: Vec<f64> = datos.row_major_vector(vec!["col_a","col_b"],vec![0.0,0.0])?;
+    println!("{:?}",mrvec);
 
     Ok(())
 }
